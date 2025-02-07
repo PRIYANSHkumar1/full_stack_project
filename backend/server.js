@@ -38,7 +38,7 @@ app.use('/api/v1/payment', paymentRoutes);
 //-------------------------------------
 
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'development') {
   app.use(express.static(path.join(__dirname, '/frontend/build')));
 
   app.get('*', (req, res) =>
