@@ -21,7 +21,7 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+app.use(cors('https://full-stack-project-frontend-6cyo.onrender.com'));
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
