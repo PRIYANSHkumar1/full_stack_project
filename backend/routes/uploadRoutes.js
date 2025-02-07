@@ -3,15 +3,15 @@ import multer from 'multer';
 import validateRequest from '../middleware/validator.js';
 
 const router = express.Router();
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads');
+    cb(null, 'uploads'); // Ensure this matches your Render disk mount path
   },
   filename: (req, file, cb) => {
     cb(null, `${file.fieldname}-${file.originalname}`);
   }
 });
+
 
 const fileFilter = (req, file, cb) => {
     if (
