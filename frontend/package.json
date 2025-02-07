@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://full-stack-project-backend-4qj7.onrender.com",
+  "proxy": "https://full-stack-project-qjkf.onrender.com",
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.1",
     "@testing-library/jest-dom": "^5.17.0",
