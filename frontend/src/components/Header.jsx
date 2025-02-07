@@ -28,8 +28,6 @@ const Header = () => {
       navigate('/login');
       toast.success('Logout successful');
     } catch (error) {
-      dispatch(logout()); // Ensure local logout even if API fails
-      navigate('/login');
       toast.error(error?.data?.message || error.error);
     }
   };
