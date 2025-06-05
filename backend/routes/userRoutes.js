@@ -11,7 +11,8 @@ import {
   getUserById,
   admins,
   resetPasswordRequest,
-  resetPassword
+  resetPassword,
+  refreshToken
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import validateRequest from '../middleware/validator.js';
@@ -59,6 +60,7 @@ router.post('/reset-password/request', validator.resetPasswordRequest, validateR
 router.post('/reset-password/reset/:id/:token', validator.resetPassword, validateRequest, resetPassword);
 router.post('/login', validator.checkLogin, validateRequest, loginUser);
 router.post('/logout', protect, logoutUser);
+router.post('/refresh-token', protect, refreshToken);
 
 router
   .route('/profile')

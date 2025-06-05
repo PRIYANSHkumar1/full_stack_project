@@ -21,7 +21,14 @@ connectDB();
 
 const app = express();
 
-app.use(cors('https://full-stack-project-frontend-6cyo.onrender.com'));
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://full-stack-project-frontend-6cyo.onrender.com' 
+    : 'http://localhost:3000',
+  credentials: true, // Allow cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());

@@ -16,13 +16,30 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/logout`,
         method: 'POST'
       }),
-      invalidatesTags: ['User']
+      invalidatesTags: ['User'],
+      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled;
+          // Clear all cache on logout
+          dispatch(apiSlice.util.resetApiState());
+        } catch (error) {
+          // Even if logout fails, clear local cache
+          dispatch(apiSlice.util.resetApiState());
+        }
+      }
     }),
     register: builder.mutation({
       query: data => ({
         url: `${USERS_URL}`,
         method: 'POST',
         body: data
+      }),
+      invalidatesTags: ['User']
+    }),
+    refreshToken: builder.mutation({
+      query: () => ({
+        url: `${USERS_URL}/refresh-token`,
+        method: 'POST'
       }),
       invalidatesTags: ['User']
     }),
@@ -96,6 +113,7 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useRegisterMutation,
+  useRefreshTokenMutation,
   useNewPasswordRequestMutation,
   useResetPasswordMutation,
   useProfileMutation,

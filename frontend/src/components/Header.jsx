@@ -23,12 +23,15 @@ const Header = () => {
   const logoutHandler = async () => {
     try {
       await logoutApiCall().unwrap();
-      dispatch(logout()); // First clear the local state
-       // Then make the API call
+      dispatch(logout({ clearCache: true }));
       navigate('/login');
       toast.success('Logout successful');
     } catch (error) {
-      toast.error(error?.data?.message || error.error);
+      // Even if API call fails, clear local state
+      dispatch(logout({ clearCache: true }));
+      navigate('/login');
+      toast.success('Logout successful');
+      console.error('Logout API error:', error);
     }
   };
 

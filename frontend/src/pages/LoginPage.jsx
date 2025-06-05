@@ -45,7 +45,9 @@ const LoginPage = () => {
       navigate(redirect);
       toast.success('Login successful');
     } catch (error) {
-      toast.error(error?.data?.message || error.error);
+      console.error('Login error:', error);
+      const message = error?.data?.message || error?.message || 'Login failed. Please try again.';
+      toast.error(message);
     }
   };
   return (

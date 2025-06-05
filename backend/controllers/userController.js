@@ -87,7 +87,13 @@ const registerUser = async (req, res, next) => {
 // @endpoint /api/users/logout
 // @access   Private
 const logoutUser = (req, res) => {
-  res.clearCookie('jwt', { httpOnly: true });
+  // Clear the JWT cookie with matching options
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== 'development',
+    sameSite: 'strict',
+    path: '/'
+  });
 
   res.status(200).json({ message: 'Logout successful' });
 };
@@ -306,10 +312,16 @@ const resetPassword = async (req, res, next) => {
   try {
     const { password } = req.body;
     const { id: userId, token } = req.params;
+    
     const user = await User.findById(userId);
+    if (!user) {
+      res.statusCode = 404;
+      throw new Error('User not found');
+    }
+
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!decodedToken) {
+    if (!decodedToken || decodedToken.userId !== userId) {
       res.statusCode = 401;
       throw new Error('Invalid or expired token');
     }
@@ -320,6 +332,60 @@ const resetPassword = async (req, res, next) => {
 
     res.status(200).json({ message: 'Password successfully reset' });
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      res.statusCode = 401;
+      return next(new Error('Reset token has expired. Please request a new password reset.'));
+    }
+    if (error.name === 'JsonWebTokenError') {
+      res.statusCode = 401;
+      return next(new Error('Invalid reset token.'));
+    }
+    next(error);
+  }
+};
+
+// @desc     Refresh JWT token
+// @method   POST
+// @endpoint /api/users/refresh-token
+// @access   Private
+const refreshToken = async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+
+    if (!token) {
+      res.statusCode = 401;
+      throw new Error('No token provided');
+    }
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    
+    if (!decodedToken || !decodedToken.userId) {
+      res.statusCode = 401;
+      throw new Error('Invalid token');
+    }
+
+    const user = await User.findById(decodedToken.userId).select('-password');
+    
+    if (!user) {
+      res.statusCode = 404;
+      throw new Error('User not found');
+    }
+
+    // Generate new token
+    const newToken = generateToken(req, res, user._id);
+
+    res.status(200).json({
+      message: 'Token refreshed successfully',
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin
+    });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      res.statusCode = 401;
+      return next(new Error('Token expired. Please login again.'));
+    }
     next(error);
   }
 };
@@ -336,5 +402,6 @@ export {
   deleteUser,
   admins,
   resetPasswordRequest,
-  resetPassword
+  resetPassword,
+  refreshToken
 };

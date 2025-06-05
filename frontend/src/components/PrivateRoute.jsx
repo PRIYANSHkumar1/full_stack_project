@@ -1,11 +1,22 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const PrivateRoute = () => {
-  const { userInfo } = useSelector(state => state.auth);
+  const { isAuthenticated, isTokenExpired } = useAuth();
+  const location = useLocation();
 
-  return userInfo ? <Outlet /> : <Navigate to='/login' replace />;
+  if (isTokenExpired()) {
+    // Token expired, redirect to login
+    return <Navigate to={`/login?redirect=${location.pathname}`} replace />;
+  }
+
+  if (!isAuthenticated) {
+    // Not authenticated, redirect to login
+    return <Navigate to={`/login?redirect=${location.pathname}`} replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default PrivateRoute;

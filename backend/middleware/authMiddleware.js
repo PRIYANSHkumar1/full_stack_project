@@ -13,15 +13,29 @@ const protect = async (req, res, next) => {
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!decodedToken) {
+    if (!decodedToken || !decodedToken.userId) {
       res.statusCode = 401;
       throw new Error('Authentication failed: Invalid token.');
     }
 
-    req.user = await User.findById(decodedToken.userId).select('-password');
+    const user = await User.findById(decodedToken.userId).select('-password');
+    
+    if (!user) {
+      res.statusCode = 401;
+      throw new Error('Authentication failed: User not found.');
+    }
 
+    req.user = user;
     next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      res.statusCode = 401;
+      return next(new Error('Authentication failed: Token expired. Please login again.'));
+    }
+    if (error.name === 'JsonWebTokenError') {
+      res.statusCode = 401;
+      return next(new Error('Authentication failed: Invalid token.'));
+    }
     next(error);
   }
 };
