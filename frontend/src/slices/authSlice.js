@@ -25,26 +25,31 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       
       // Clear all auth-related localStorage items
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('tokenExpiration');
-      
-      // Clear any other potential auth-related data
-      localStorage.removeItem('cartItems');
-      
-      // For deployment debugging
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Auth state cleared:', {
-          clearCache: action.payload?.clearCache,
-          timestamp: new Date().toISOString()
-        });
-      }
-      
-      // Clear any cached data
-      if (action.payload && action.payload.clearCache) {
-        // This will be handled by RTK Query cache invalidation
+      try {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('tokenExpiration');
+        
+        // Clear any other potential auth-related data
+        localStorage.removeItem('cartItems');
+        
+        // For deployment debugging
         if (process.env.NODE_ENV === 'development') {
-          console.log('Cache clear requested during logout');
+          console.log('Auth state cleared:', {
+            clearCache: action.payload?.clearCache || false,
+            timestamp: new Date().toISOString()
+          });
         }
+        
+        // Clear any cached data
+        if (action.payload && action.payload.clearCache) {
+          // This will be handled by RTK Query cache invalidation
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Cache clear requested during logout');
+          }
+        }
+      } catch (error) {
+        console.error('Error during logout cleanup:', error);
+        // Continue with logout even if cleanup fails
       }
     },
     checkTokenExpiration: (state) => {

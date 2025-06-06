@@ -63,6 +63,40 @@ export const checkNetworkConnectivity = async () => {
 
 export const logDeploymentInfo = () => {
   if (isProduction()) {
+    console.log('Running in production mode');
+    console.log('Backend URL:', getBaseUrl());
+    console.log('Frontend URL:', window.location.origin);
+  } else {
+    console.log('Running in development mode');
+  }
+};
+
+export const isCorsError = (error) => {
+  return error?.message?.includes('CORS') || 
+         error?.data?.message?.includes('CORS') ||
+         error?.status === 0; // Often indicates CORS issues
+};
+
+export const isNetworkError = (error) => {
+  return error?.status === 'FETCH_ERROR' ||
+         error?.status === 'TIMEOUT_ERROR' ||
+         error?.name === 'NetworkError' ||
+         !navigator.onLine;
+};
+  try {
+    const response = await fetch('/api/v1/health', {
+      method: 'GET',
+      cache: 'no-cache'
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn('Network connectivity check failed:', error);
+    return false;
+  }
+};
+
+export const logDeploymentInfo = () => {
+  if (isProduction()) {
     console.log('Deployment Info:', {
       environment: 'production',
       baseUrl: getBaseUrl(),

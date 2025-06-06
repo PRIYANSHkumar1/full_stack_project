@@ -27,12 +27,6 @@ export const usersApiSlice = apiSlice.injectEndpoints({
           // Even if logout fails, clear local cache for deployment compatibility
           dispatch(apiSlice.util.resetApiState());
         }
-      },
-      // Add extra handling for deployment scenarios
-      transformErrorResponse: (response, meta, arg) => {
-        // Always treat logout as successful from UI perspective
-        console.log('Logout response (treating as success):', response);
-        return { data: { message: 'Logout completed' } };
       }
     }),
     register: builder.mutation({
