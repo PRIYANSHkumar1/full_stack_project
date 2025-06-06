@@ -17,20 +17,32 @@ const DeploymentErrorHandler = ({ children }) => {
     const handleUnhandledRejection = (event) => {
       console.error('Unhandled promise rejection:', event.reason);
       
-      // Check if it's an authentication error
-      if (event.reason?.status === 401 || 
-          event.reason?.message?.includes('token') ||
-          event.reason?.message?.includes('unauthorized')) {
+      // Safely check for authentication errors
+      try {
+        const reason = event.reason;
+        const isAuthError = reason?.status === 401 || 
+                           reason?.message?.includes('token') ||
+                           reason?.message?.includes('unauthorized') ||
+                           reason?.data?.message?.includes('token') ||
+                           reason?.data?.message?.includes('unauthorized');
         
-        console.log('Authentication error detected in unhandled rejection');
-        dispatch(logout({ clearCache: true }));
-        navigate('/login');
-        toast.error('Your session has expired. Please login again.');
-      }
-      
-      // Prevent default browser error handling in production
-      if (isProduction()) {
-        event.preventDefault();
+        if (isAuthError) {
+          console.log('Authentication error detected in unhandled rejection');
+          dispatch(logout({ clearCache: true }));
+          navigate('/login');
+          toast.error('Your session has expired. Please login again.');
+        }
+        
+        // Prevent default browser error handling in production
+        if (isProduction()) {
+          event.preventDefault();
+        }
+      } catch (handlerError) {
+        console.error('Error in rejection handler:', handlerError);
+        // Prevent infinite error loops
+        if (isProduction()) {
+          event.preventDefault();
+        }
       }
     };
 
