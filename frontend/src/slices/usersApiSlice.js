@@ -20,12 +20,19 @@ export const usersApiSlice = apiSlice.injectEndpoints({
       onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
         try {
           await queryFulfilled;
-          // Clear all cache on logout
+          // Clear all cache on successful logout
           dispatch(apiSlice.util.resetApiState());
         } catch (error) {
-          // Even if logout fails, clear local cache
+          console.warn('Logout API failed, clearing cache anyway:', error);
+          // Even if logout fails, clear local cache for deployment compatibility
           dispatch(apiSlice.util.resetApiState());
         }
+      },
+      // Add extra handling for deployment scenarios
+      transformErrorResponse: (response, meta, arg) => {
+        // Always treat logout as successful from UI perspective
+        console.log('Logout response (treating as success):', response);
+        return { data: { message: 'Logout completed' } };
       }
     }),
     register: builder.mutation({

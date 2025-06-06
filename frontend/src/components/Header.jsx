@@ -22,16 +22,28 @@ const Header = () => {
 
   const logoutHandler = async () => {
     try {
+      // Always try to call the logout API first
       await logoutApiCall().unwrap();
+      
+      // Clear local state regardless of API success
       dispatch(logout({ clearCache: true }));
       navigate('/login');
       toast.success('Logout successful');
     } catch (error) {
-      // Even if API call fails, clear local state
+      console.error('Logout API error:', error);
+      
+      // Even if logout API fails, clear local state
+      // This is important for deployment scenarios where network issues might occur
       dispatch(logout({ clearCache: true }));
       navigate('/login');
+      
+      // Still show success to user since local logout worked
       toast.success('Logout successful');
-      console.error('Logout API error:', error);
+      
+      // Log the error for debugging but don't show to user
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Logout API failed but local logout completed:', error);
+      }
     }
   };
 

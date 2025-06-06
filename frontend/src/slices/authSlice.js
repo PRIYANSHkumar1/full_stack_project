@@ -28,9 +28,23 @@ const authSlice = createSlice({
       localStorage.removeItem('userInfo');
       localStorage.removeItem('tokenExpiration');
       
+      // Clear any other potential auth-related data
+      localStorage.removeItem('cartItems');
+      
+      // For deployment debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Auth state cleared:', {
+          clearCache: action.payload?.clearCache,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
       // Clear any cached data
       if (action.payload && action.payload.clearCache) {
         // This will be handled by RTK Query cache invalidation
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Cache clear requested during logout');
+        }
       }
     },
     checkTokenExpiration: (state) => {

@@ -5,16 +5,24 @@ const notFound = (req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode);
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode; // Ensure statusCode is a number
+  let message = err.message;
 
-  const responseBody = {
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
-  };
+  // If Mongoose not found error, set to 404 and change message
+  if (err.name === 'CastError' && err.kind === 'ObjectId') {
+    statusCode = 404;
+    message = 'Resource not found';
+  }
 
-  console.error('Error: ', responseBody);
-  res.json(responseBody);
+  // Ensure statusCode is a valid HTTP status code number
+  if (typeof statusCode !== 'number' || statusCode < 100 || statusCode > 599) {
+    statusCode = 500; // Default to 500 if statusCode is invalid
+  }
+
+  res.status(statusCode).json({
+    message: message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack
+  });
 };
 
 export { notFound, errorHandler };

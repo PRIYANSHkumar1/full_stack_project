@@ -7,22 +7,25 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthProvider from './components/AuthProvider';
 import TokenInterceptor from './components/TokenInterceptor';
+import DeploymentErrorHandler from './components/DeploymentErrorHandler';
 
 const App = () => {
   return (
-    <AuthProvider>
-      <TokenInterceptor />
-      <div className='position-relative'>
-        <Header />
-        <main>
-          <Container>
-            <Outlet />
-          </Container>
-        </main>
-        <Footer />
-        <ToastContainer autoClose={1000} />
-      </div>
-    </AuthProvider>
+    <DeploymentErrorHandler>
+      <AuthProvider>
+        <TokenInterceptor />
+        <div className='position-relative'>
+          <Header />
+          <main>
+            <Container>
+              <Outlet />
+            </Container>
+          </main>
+          <Footer />
+          <ToastContainer autoClose={1000} />
+        </div>
+      </AuthProvider>
+    </DeploymentErrorHandler>
   );
 };
 

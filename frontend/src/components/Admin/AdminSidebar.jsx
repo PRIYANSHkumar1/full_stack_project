@@ -23,13 +23,25 @@ const Sidebar = () => {
 
   const logoutHandler = async () => {
     try {
+      // Try to call logout API
       await logoutApiCall().unwrap();
-      dispatch(logout());
-
+      
+      // Clear state and redirect
+      dispatch(logout({ clearCache: true }));
       navigate('/admin/login');
       toast.success('Logout successful');
     } catch (error) {
-      toast.error(error?.data?.message || error.error);
+      console.error('Logout API error:', error);
+      
+      // Even if API fails, clear local state for deployment compatibility
+      dispatch(logout({ clearCache: true }));
+      navigate('/admin/login');
+      toast.success('Logout successful');
+      
+      // Log for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Admin logout API failed but local logout completed:', error);
+      }
     }
   };
   return (

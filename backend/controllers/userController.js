@@ -36,7 +36,8 @@ const loginUser = async (req, res, next) => {
       userId: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     next(error);
@@ -75,7 +76,8 @@ const registerUser = async (req, res, next) => {
       userId: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     next(error);
@@ -87,15 +89,39 @@ const registerUser = async (req, res, next) => {
 // @endpoint /api/users/logout
 // @access   Private
 const logoutUser = (req, res) => {
-  // Clear the JWT cookie with matching options
-  res.clearCookie('jwt', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV !== 'development',
-    sameSite: 'strict',
-    path: '/'
-  });
+  try {
+    // Clear the JWT cookie with multiple configurations to ensure compatibility
+    // across different deployment environments
+    
+    // Primary cookie clear with production settings
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? undefined : undefined
+    });
 
-  res.status(200).json({ message: 'Logout successful' });
+    // Fallback cookie clear for broader compatibility
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      path: '/'
+    });
+
+    // Additional fallback without any options
+    res.clearCookie('jwt');
+
+    res.status(200).json({ 
+      message: 'Logout successful',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      message: 'Logout failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
 };
 
 // @desc     Get user profile

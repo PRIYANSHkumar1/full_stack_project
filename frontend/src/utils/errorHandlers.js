@@ -25,6 +25,29 @@ export const getErrorMessage = (error) => {
   if (isAuthError(error)) {
     return 'Your session has expired. Please login again.';
   }
+
+  // Attempt to extract message from common patterns, ensuring a string is returned
+  if (typeof error?.data?.message === 'string') {
+    return error.data.message;
+  }
+  if (typeof error?.error?.data?.message === 'string') {
+    return error.error.data.message;
+  }
   
-  return error?.data?.message || error?.message || 'An error occurred. Please try again.';
+  // Handle cases where error.error might be an object with a message property, or a string itself
+  if (error?.error) {
+    if (typeof error.error === 'string') {
+      return error.error;
+    }
+    // Check if error.error is an object and has a string message property
+    if (typeof error.error.message === 'string') {
+      return error.error.message;
+    }
+  }
+  
+  if (typeof error?.message === 'string') {
+    return error.message;
+  }
+
+  return 'An unknown error occurred. Please try again.';
 };
